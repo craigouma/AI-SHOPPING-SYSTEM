@@ -1,0 +1,64 @@
+import numpy as np
+from sklearn.neural_network import MLPClassifier
+
+class ShoppingAI:
+    def __init__(self, products, prices, discounts):
+        self.products = products
+        self.prices = prices
+        self.discounts = discounts
+        self.cart = []
+        self.total_price = 0
+        self.model = None
+        self.trained = False
+
+    def add_to_cart(self, product, quantity):
+        if product not in self.products:
+            raise ValueError("Invalid product selected.")
+        self.cart.append((product, quantity))
+        self.total_price += self.prices[product] * quantity
+
+    def remove_from_cart(self, product, quantity):
+        if product not in self.products:
+            raise ValueError("Invalid product selected.")
+        self.cart.remove((product, quantity))
+        self.total_price -= self.prices[product] * quantity
+
+    def checkout(self):
+        if len(self.cart) == 0:
+            raise ValueError("Your cart is empty.")
+        print("Your total is $" + str(self.total_price))
+
+    def train(self, data, labels):
+        self.model = MLPClassifier()
+        self.model.fit(data, labels)
+        self.trained = True
+
+    def predict(self, data):
+        if not self.trained:
+            raise ValueError("Model has not been trained.")
+        return self.model.predict(data)
+
+    def recommend(self, customer_profile):
+        if not self.trained:
+            raise ValueError("Model has not been trained.")
+        recommendations = self.predict(customer_profile)
+        for product in recommendations:
+            if product in self.discounts:
+                print("We recommend the " + product + " at a discounted price of $" + str(self.prices[product] * self.discounts[product]))
+            else:
+                print("We recommend the " + product + " at a price of $" + str(self.prices[product]))
+
+# Initialize the ShoppingAI with a list of products, their prices, and any applicable discounts
+products = ["apple", "banana", "orange", "grapes"]
+prices = {"apple": 0.99, "banana": 0.50, "orange": 0.75, "grapes": 1.99}
+discounts = {"apple": 0.8, "grapes": 0.9}
+shopping_ai = ShoppingAI(products, prices, discounts)
+
+# Train the AI model with sample data
+data = np.array([[0, 0, 1, 0], [1, 1, 0, 0], [1, 0, 0, 1]])
+labels = np.array([1, 2, 3])
+shopping_ai.train(data, labels)
+
+# Use the trained model to make recommendations for a customer
+customer_profile = np.array([1, 0, 0, 0])
+shopping_ai.recommend(customer_profile)
